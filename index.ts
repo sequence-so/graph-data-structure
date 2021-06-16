@@ -163,6 +163,7 @@ function Graph(serialized?: Serialized): GraphInstance {
       edges[u] = adjacent(u).filter(function (_v) {
         return _v !== v;
       });
+      delete edgeIds[encodeEdge(u, v)];
     }
     return graph;
   }

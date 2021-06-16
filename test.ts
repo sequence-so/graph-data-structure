@@ -485,6 +485,11 @@ describe("Graph", function () {
       assert.deepStrictEqual(graph.getEdgeId("b", "a"), "456");
       assert.deepStrictEqual(graph.getEdgeId("b", "c"), "789");
     });
+    it("Should remove ids when an edge is removed", () => {
+      let graph = Graph().addEdge("a", "b", undefined, "123");
+      graph.removeEdge("a", "b");
+      assert.strictEqual(graph.getEdgeId("a", "b"), undefined);
+    });
   });
 });
 
