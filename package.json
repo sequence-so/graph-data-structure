@@ -1,16 +1,16 @@
 {
     "name": "sequence-graph-data-structure",
-    "version": "2.0.1",
+    "version": "2.0.5",
     "description": "A graph data structure with topological sort.",
     "main": "index.js",
     "files": [
         "graph-data-structure.js",
         "index.d.ts"
     ],
-    "typings": "src/index.d.ts",
+    "typings": "index.d.ts",
     "scripts": {
         "build": "tsc",
-        "test": "npm run build && mocha",
+        "test": "npm run build && env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' ts-mocha test.ts",
         "browserify": "browserify index.js -s GraphDataStructure -o graph-data-structure.js",
         "prepublishOnly": "npm run build && npm run browserify"
     },
@@ -31,10 +31,13 @@
     },
     "homepage": "https://github.com/sequence-so/graph-data-structure#readme",
     "devDependencies": {
+        "@types/assert": "^1.5.4",
+        "@types/mocha": "^8.2.2",
         "@types/node": "^15.3.1",
         "browserify": "^17.0.0",
         "graph-diagrams": "^0.5.0",
         "mocha": "^8.4.0",
+        "ts-mocha": "^8.0.0",
         "typescript": "^4.2.4"
     }
 }

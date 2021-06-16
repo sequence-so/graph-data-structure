@@ -1,10 +1,11 @@
 type NodeId = string;
 type EdgeWeight = number;
 type EncodedEdge = string;
+type EdgeId = string;
 
-interface Serialized {
+export interface Serialized {
   nodes: { id: NodeId }[];
-  links: { source: NodeId; target: NodeId; weight: EdgeWeight }[];
+  links: { source: NodeId; target: NodeId; weight: EdgeWeight; id: EdgeId }[];
 }
 
 class CycleError extends Error {
@@ -15,9 +16,9 @@ class CycleError extends Error {
 }
 
 // A graph data structure with depth-first search and topological sort.
-function Graph(serialized?: Serialized) {
+function Graph(serialized?: Serialized): GraphInstance {
   // Returned graph instance
-  const graph = {
+  const graph: GraphInstance = {
     addNode,
     removeNode,
     nodes,
@@ -28,6 +29,8 @@ function Graph(serialized?: Serialized) {
     hasEdge,
     setEdgeWeight,
     getEdgeWeight,
+    setEdgeId,
+    getEdgeId,
     indegree,
     outdegree,
     depthFirstSearch,
@@ -50,6 +53,10 @@ function Graph(serialized?: Serialized) {
   // Keys are string encodings of edges.
   // Values are weights (numbers).
   const edgeWeights: Record<EncodedEdge, EdgeWeight> = {};
+
+  // Creates a unique identifier for each each, separate from
+  // the EncodedEdge identifier.
+  const edgeIds: Record<EncodedEdge, string> = {};
 
   // If a serialized graph was passed into the constructor, deserialize it.
   if (serialized) {
@@ -121,15 +128,28 @@ function Graph(serialized?: Serialized) {
     return weight === undefined ? 1 : weight;
   }
 
+  function setEdgeId(u: NodeId, v: NodeId, edgeId: string) {
+    edgeIds[encodeEdge(u, v)] = edgeId;
+    return graph;
+  }
+
+  function getEdgeId(u: NodeId, v: NodeId): string {
+    return edgeIds[encodeEdge(u, v)];
+  }
+
   // Adds an edge from node u to node v.
   // Implicitly adds the nodes if they were not already added.
-  function addEdge(u: NodeId, v: NodeId, weight?: EdgeWeight) {
+  function addEdge(u: NodeId, v: NodeId, weight?: EdgeWeight, edgeId?: string) {
     addNode(u);
     addNode(v);
     adjacent(u).push(v);
 
-    if (weight !== undefined) {
+    if (typeof weight !== "undefined") {
       setEdgeWeight(u, v, weight);
+    }
+
+    if (typeof edgeId !== "undefined") {
+      setEdgeId(u, v, edgeId);
     }
 
     return graph;
@@ -473,6 +493,7 @@ function Graph(serialized?: Serialized) {
           source: source,
           target: target,
           weight: getEdgeWeight(source, target),
+          id: getEdgeId(source, target),
         });
       });
     });
@@ -517,4 +538,49 @@ function Graph(serialized?: Serialized) {
   // The returned graph instance.
   return graph;
 }
-export = Graph;
+export default Graph;
+
+export interface GraphInstance {
+  addNode: (node: NodeId) => GraphInstance;
+  removeNode: (node: NodeId) => GraphInstance;
+  nodes: () => NodeId[];
+  adjacent: (node: NodeId) => NodeId[];
+  addEdge: (
+    u: NodeId,
+    v: NodeId,
+    weight?: number,
+    edgeId?: string
+  ) => GraphInstance;
+  getEdges: () => Record<string, string[]>;
+  removeEdge: (u: NodeId, v: NodeId) => GraphInstance;
+  hasEdge: (u: NodeId, v: NodeId) => boolean;
+  setEdgeWeight: (u: NodeId, v: NodeId, weight: EdgeWeight) => GraphInstance;
+  getEdgeWeight: (u: NodeId, v: NodeId) => EdgeWeight;
+  setEdgeId: (u: NodeId, v: NodeId, edgeId: string) => GraphInstance;
+  getEdgeId: (u: NodeId, v: NodeId) => string;
+  indegree: (node: NodeId) => number;
+  outdegree: (node: NodeId) => number;
+  depthFirstSearch: (
+    sourceNodes?: string[] | undefined,
+    options?: {
+      includeSourceNodes: boolean;
+      errorOnCycle: boolean;
+    }
+  ) => string[] | Record<string, string>;
+  hasCycle: () => boolean;
+  getCycles: (sourceNodes?: string[] | undefined) => [NodeId, NodeId][];
+  walk: (onElement: (node: NodeId) => void) => void;
+  lowestCommonAncestors: (node1: NodeId, node2: NodeId) => string[];
+  topologicalSort: (
+    sourceNodes?: string[] | undefined,
+    includeSourceNodes?: boolean
+  ) => string[];
+  shortestPath: (
+    source: NodeId,
+    destination: NodeId
+  ) => string[] & {
+    weight?: number | undefined;
+  };
+  serialize: () => Serialized;
+  deserialize: (serialized: Serialized) => GraphInstance;
+}

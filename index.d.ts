@@ -1,6 +1,7 @@
 declare type NodeId = string;
 declare type EdgeWeight = number;
-interface Serialized {
+declare type EdgeId = string;
+export interface Serialized {
     nodes: {
         id: NodeId;
     }[];
@@ -8,19 +9,24 @@ interface Serialized {
         source: NodeId;
         target: NodeId;
         weight: EdgeWeight;
+        id: EdgeId;
     }[];
 }
-declare function Graph(serialized?: Serialized): {
-    addNode: (node: NodeId) => any;
-    removeNode: (node: NodeId) => any;
+declare function Graph(serialized?: Serialized): GraphInstance;
+export default Graph;
+export interface GraphInstance {
+    addNode: (node: NodeId) => GraphInstance;
+    removeNode: (node: NodeId) => GraphInstance;
     nodes: () => NodeId[];
     adjacent: (node: NodeId) => NodeId[];
-    addEdge: (u: NodeId, v: NodeId, weight?: number | undefined) => any;
+    addEdge: (u: NodeId, v: NodeId, weight?: number, edgeId?: string) => GraphInstance;
     getEdges: () => Record<string, string[]>;
-    removeEdge: (u: NodeId, v: NodeId) => any;
+    removeEdge: (u: NodeId, v: NodeId) => GraphInstance;
     hasEdge: (u: NodeId, v: NodeId) => boolean;
-    setEdgeWeight: (u: NodeId, v: NodeId, weight: EdgeWeight) => any;
+    setEdgeWeight: (u: NodeId, v: NodeId, weight: EdgeWeight) => GraphInstance;
     getEdgeWeight: (u: NodeId, v: NodeId) => EdgeWeight;
+    setEdgeId: (u: NodeId, v: NodeId, edgeId: string) => GraphInstance;
+    getEdgeId: (u: NodeId, v: NodeId) => string;
     indegree: (node: NodeId) => number;
     outdegree: (node: NodeId) => number;
     depthFirstSearch: (sourceNodes?: string[] | undefined, options?: {
@@ -36,6 +42,5 @@ declare function Graph(serialized?: Serialized): {
         weight?: number | undefined;
     };
     serialize: () => Serialized;
-    deserialize: (serialized: Serialized) => any;
-};
-export = Graph;
+    deserialize: (serialized: Serialized) => GraphInstance;
+}

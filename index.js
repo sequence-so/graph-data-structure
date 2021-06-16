@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class CycleError extends Error {
     constructor(message) {
         super(message);
@@ -19,6 +20,8 @@ function Graph(serialized) {
         hasEdge,
         setEdgeWeight,
         getEdgeWeight,
+        setEdgeId,
+        getEdgeId,
         indegree,
         outdegree,
         depthFirstSearch,
@@ -39,6 +42,9 @@ function Graph(serialized) {
     // Keys are string encodings of edges.
     // Values are weights (numbers).
     const edgeWeights = {};
+    // Creates a unique identifier for each each, separate from
+    // the EncodedEdge identifier.
+    const edgeIds = {};
     // If a serialized graph was passed into the constructor, deserialize it.
     if (serialized) {
         deserialize(serialized);
@@ -98,14 +104,24 @@ function Graph(serialized) {
         const weight = edgeWeights[encodeEdge(u, v)];
         return weight === undefined ? 1 : weight;
     }
+    function setEdgeId(u, v, edgeId) {
+        edgeIds[encodeEdge(u, v)] = edgeId;
+        return graph;
+    }
+    function getEdgeId(u, v) {
+        return edgeIds[encodeEdge(u, v)];
+    }
     // Adds an edge from node u to node v.
     // Implicitly adds the nodes if they were not already added.
-    function addEdge(u, v, weight) {
+    function addEdge(u, v, weight, edgeId) {
         addNode(u);
         addNode(v);
         adjacent(u).push(v);
-        if (weight !== undefined) {
+        if (typeof weight !== "undefined") {
             setEdgeWeight(u, v, weight);
+        }
+        if (typeof edgeId !== "undefined") {
+            setEdgeId(u, v, edgeId);
         }
         return graph;
     }
@@ -400,6 +416,7 @@ function Graph(serialized) {
                     source: source,
                     target: target,
                     weight: getEdgeWeight(source, target),
+                    id: getEdgeId(source, target),
                 });
             });
         });
@@ -440,4 +457,4 @@ function Graph(serialized) {
     // The returned graph instance.
     return graph;
 }
-module.exports = Graph;
+exports.default = Graph;

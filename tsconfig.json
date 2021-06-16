@@ -1,19 +1,22 @@
 {
-    "compilerOptions": {
-        "allowJs": false,
-        "declaration": true,
-        "esModuleInterop": true,
-        "module": "CommonJS",
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "strict": true,
-        "target": "ES2016",
-        "strictFunctionTypes": true,
-        "strictNullChecks": true,
-        "downlevelIteration": true,
-        "isolatedModules": true
-    },
-    "file": ["index.ts"],
-    "exclude": ["node_modules", "*.d.ts"]
+  "compilerOptions": {
+    "allowJs": false,
+    "declaration": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "strict": true,
+    "target": "ES2016",
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "downlevelIteration": true,
+    "isolatedModules": true,
+    "types": ["mocha"],
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "file": ["index.ts"],
+  "include": ["index.ts"],
+  "exclude": ["node_modules", "*.d.ts", "test.ts"]
 }

@@ -1,9 +1,9 @@
 // Unit tests for reactive-property.
-var assert = require("assert");
+import assert from "assert";
 
 // If using from the NPM package, this line would be
 // var Graph = require("graph-data-structure");
-var Graph = require("./index.js");
+import Graph, { GraphInstance, Serialized } from "./index";
 
 var outputGraph = require("graph-diagrams")({
   // If true, writes graph files to ../graph-diagrams for visualization.
@@ -11,11 +11,12 @@ var outputGraph = require("graph-diagrams")({
   project: "graph-data-structure",
 });
 
-function output(graph, name) {
+function output(graph: GraphInstance, name: string) {
   outputGraph(graph.serialize(), name);
 }
 
-function withWeight(nodeList, weight) {
+function withWeight(nodeList: any[], weight: number) {
+  //@ts-ignore
   nodeList.weight = weight;
   return nodeList;
 }
@@ -26,17 +27,17 @@ describe("Graph", function () {
       var graph = Graph();
       graph.addNode("a");
       graph.addNode("b");
-      assert(graph.nodes().length, 2);
-      assert(contains(graph.nodes(), "a"));
-      assert(contains(graph.nodes(), "b"));
+      assert.strictEqual(graph.nodes().length, 2);
+      assert.ok(contains(graph.nodes(), "a"));
+      assert.ok(contains(graph.nodes(), "b"));
       output(graph, "ab-nodes");
     });
 
     it("Should chain addNode.", function () {
       var graph = Graph().addNode("a").addNode("b");
-      assert(graph.nodes().length, 2);
-      assert(contains(graph.nodes(), "a"));
-      assert(contains(graph.nodes(), "b"));
+      assert.strictEqual(graph.nodes().length, 2);
+      assert.ok(contains(graph.nodes(), "a"));
+      assert.ok(contains(graph.nodes(), "b"));
     });
 
     it("Should remove nodes.", function () {
@@ -62,25 +63,25 @@ describe("Graph", function () {
       graph.addNode("a");
       graph.addNode("b");
       graph.addEdge("a", "b");
-      assert(graph.adjacent("a").length, 1);
-      assert(graph.adjacent("a")[0], "b");
+      assert.strictEqual(graph.adjacent("a").length, 1);
+      assert.strictEqual(graph.adjacent("a")[0], "b");
       output(graph, "ab");
     });
 
     it("Should implicitly add nodes when edges are added.", function () {
       var graph = Graph();
       graph.addEdge("a", "b");
-      assert(graph.adjacent("a").length, 1);
-      assert(graph.adjacent("a")[0], "b");
-      assert(graph.nodes().length, 2);
-      assert(contains(graph.nodes(), "a"));
-      assert(contains(graph.nodes(), "b"));
+      assert.strictEqual(graph.adjacent("a").length, 1);
+      assert.strictEqual(graph.adjacent("a")[0], "b");
+      assert.strictEqual(graph.nodes().length, 2);
+      assert.strictEqual(contains(graph.nodes(), "a"), true);
+      assert.strictEqual(contains(graph.nodes(), "b"), true);
     });
 
     it("Should chain addEdge.", function () {
       var graph = Graph().addEdge("a", "b");
-      assert(graph.adjacent("a").length, 1);
-      assert(graph.adjacent("a")[0], "b");
+      assert.strictEqual(graph.adjacent("a").length, 1);
+      assert.strictEqual(graph.adjacent("a")[0], "b");
     });
 
     it("Should remove edges.", function () {
@@ -99,9 +100,9 @@ describe("Graph", function () {
       var graph = Graph();
       graph.addEdge("a", "b");
       graph.removeEdge("a", "b");
-      assert(graph.nodes().length, 2);
-      assert(contains(graph.nodes(), "a"));
-      assert(contains(graph.nodes(), "b"));
+      assert.strictEqual(graph.nodes().length, 2);
+      assert.ok(contains(graph.nodes(), "a"));
+      assert.ok(contains(graph.nodes(), "b"));
     });
 
     it("Should remove outgoing edges when a node is removed.", function () {
@@ -122,20 +123,20 @@ describe("Graph", function () {
       var graph = Graph();
       graph.addEdge("a", "b");
       assert.strictEqual(graph.indegree("a"), 0);
-      assert(graph.indegree("b"), 1);
+      assert.strictEqual(graph.indegree("b"), 1);
 
       graph.addEdge("c", "b");
-      assert(graph.indegree("b"), 2);
+      assert.strictEqual(graph.indegree("b"), 2);
     });
 
     it("Should compute outdegree.", function () {
       var graph = Graph();
       graph.addEdge("a", "b");
-      assert(graph.outdegree("a"), 1);
+      assert.strictEqual(graph.outdegree("a"), 1);
       assert.strictEqual(graph.outdegree("b"), 0);
 
       graph.addEdge("a", "c");
-      assert(graph.outdegree("a"), 2);
+      assert.strictEqual(graph.outdegree("a"), 2);
     });
   });
 
@@ -144,7 +145,7 @@ describe("Graph", function () {
       var graph = Graph();
       graph.addEdge("a", "b");
       graph.addEdge("b", "a");
-      assert(graph.hasCycle());
+      assert.ok(graph.hasCycle());
     });
 
     it("Should detect cycle (long).", function () {
@@ -153,19 +154,19 @@ describe("Graph", function () {
       graph.addEdge("b", "c");
       graph.addEdge("c", "d");
       graph.addEdge("d", "a");
-      assert(graph.hasCycle());
+      assert.ok(graph.hasCycle());
     });
 
     it("Should detect cycle (loop).", function () {
       var graph = Graph();
       graph.addEdge("a", "a");
-      assert(graph.hasCycle());
+      assert.ok(graph.hasCycle());
     });
 
     it("Should not detect cycle.", function () {
       var graph = Graph();
       graph.addEdge("a", "b");
-      assert(!graph.hasCycle());
+      assert.ok(!graph.hasCycle());
     });
 
     // This example is from Cormen et al. "Introduction to Algorithms" page 550
@@ -186,14 +187,14 @@ describe("Graph", function () {
 
       var sorted = graph.topologicalSort();
 
-      assert(comesBefore(sorted, "pants", "shoes"));
-      assert(comesBefore(sorted, "underpants", "pants"));
-      assert(comesBefore(sorted, "underpants", "shoes"));
-      assert(comesBefore(sorted, "shirt", "jacket"));
-      assert(comesBefore(sorted, "shirt", "belt"));
-      assert(comesBefore(sorted, "belt", "jacket"));
+      assert.ok(comesBefore(sorted, "pants", "shoes"));
+      assert.ok(comesBefore(sorted, "underpants", "pants"));
+      assert.ok(comesBefore(sorted, "underpants", "shoes"));
+      assert.ok(comesBefore(sorted, "shirt", "jacket"));
+      assert.ok(comesBefore(sorted, "shirt", "belt"));
+      assert.ok(comesBefore(sorted, "belt", "jacket"));
 
-      assert(sorted.length, 8);
+      assert.strictEqual(sorted.length, 8);
 
       output(graph, "getting-dressed");
     });
@@ -203,9 +204,9 @@ describe("Graph", function () {
       graph.addEdge("a", "b");
       graph.addEdge("b", "c");
       var sorted = graph.topologicalSort(["a"], false);
-      assert(sorted.length, 2);
-      assert(sorted[0], "b");
-      assert(sorted[1], "c");
+      assert.strictEqual(sorted.length, 2);
+      assert.strictEqual(sorted[0], "b");
+      assert.strictEqual(sorted[1], "c");
       output(graph, "abc");
     });
 
@@ -219,16 +220,16 @@ describe("Graph", function () {
       graph.addEdge("c", "e"); //      e
 
       var sorted = graph.topologicalSort(["a"], false);
-      assert(sorted.length, 4);
-      assert(contains(sorted, "b"));
-      assert(contains(sorted, "c"));
-      assert(contains(sorted, "d"));
-      assert(sorted[sorted.length - 1], "e");
+      assert.strictEqual(sorted.length, 4);
+      assert.ok(contains(sorted, "b"));
+      assert.ok(contains(sorted, "c"));
+      assert.ok(contains(sorted, "d"));
+      assert.strictEqual(sorted[sorted.length - 1], "e");
 
-      assert(comesBefore(sorted, "b", "c"));
-      assert(comesBefore(sorted, "b", "e"));
-      assert(comesBefore(sorted, "c", "e"));
-      assert(comesBefore(sorted, "d", "e"));
+      assert.ok(comesBefore(sorted, "b", "c"));
+      assert.ok(comesBefore(sorted, "b", "e"));
+      assert.ok(comesBefore(sorted, "c", "e"));
+      assert.ok(comesBefore(sorted, "d", "e"));
 
       output(graph, "tricky-case");
     });
@@ -236,9 +237,9 @@ describe("Graph", function () {
     it("Should exclude source nodes with a cycle.", function () {
       var graph = Graph().addEdge("a", "b").addEdge("b", "c").addEdge("c", "a");
       var sorted = graph.topologicalSort(["a"], false);
-      assert(sorted.length, 2);
-      assert(sorted[0], "b");
-      assert(sorted[1], "c");
+      assert.strictEqual(sorted.length, 2);
+      assert.strictEqual(sorted[0], "b");
+      assert.strictEqual(sorted[1], "c");
 
       output(graph, "cycle");
     });
@@ -255,7 +256,7 @@ describe("Graph", function () {
         .addEdge("c", "a");
 
       var sorted = graph.topologicalSort(["a", "b"], false);
-      assert(!contains(sorted, "b"));
+      assert.ok(!contains(sorted, "b"));
 
       output(graph, "cycles");
     });
@@ -311,20 +312,20 @@ describe("Graph", function () {
   });
 
   describe("Serialization", function () {
-    var serialized;
+    let serialized: Serialized;
 
-    function checkSerialized(graph) {
-      assert(graph.nodes.length, 3);
-      assert(graph.links.length, 2);
+    function checkSerialized(graph: Serialized) {
+      assert.strictEqual(graph.nodes.length, 3);
+      assert.strictEqual(graph.links.length, 2);
 
-      assert(graph.nodes[0].id, "a");
-      assert(graph.nodes[1].id, "b");
-      assert(graph.nodes[2].id, "c");
+      assert.strictEqual(graph.nodes[0].id, "a");
+      assert.strictEqual(graph.nodes[1].id, "b");
+      assert.strictEqual(graph.nodes[2].id, "c");
 
-      assert(graph.links[0].source, "a");
-      assert(graph.links[0].target, "b");
-      assert(graph.links[1].source, "b");
-      assert(graph.links[1].target, "c");
+      assert.strictEqual(graph.links[0].source, "a");
+      assert.strictEqual(graph.links[0].target, "b");
+      assert.strictEqual(graph.links[1].source, "b");
+      assert.strictEqual(graph.links[1].target, "c");
     }
 
     it("Should serialize a graph.", function () {
@@ -353,29 +354,32 @@ describe("Graph", function () {
   describe("Edge Weights", function () {
     it("Should set and get an edge weight.", function () {
       var graph = Graph().addEdge("a", "b", 5);
-      assert(graph.getEdgeWeight("a", "b"), 5);
+      assert.strictEqual(graph.getEdgeWeight("a", "b"), 5);
     });
 
     it("Should set edge weight via setEdgeWeight.", function () {
       var graph = Graph().addEdge("a", "b").setEdgeWeight("a", "b", 5);
-      assert(graph.getEdgeWeight("a", "b"), 5);
+      assert.strictEqual(graph.getEdgeWeight("a", "b"), 5);
     });
 
     it("Should return weight of 1 if no weight set.", function () {
       var graph = Graph().addEdge("a", "b");
-      assert(graph.getEdgeWeight("a", "b"), 1);
+      assert.strictEqual(graph.getEdgeWeight("a", "b"), 1);
     });
   });
 
   describe("Dijkstra's Shortest Path Algorithm", function () {
     it("Should compute shortest path on a single edge.", function () {
       var graph = Graph().addEdge("a", "b");
-      assert.deepEqual(graph.shortestPath("a", "b"), withWeight(["a", "b"], 1));
+      assert.deepStrictEqual(
+        graph.shortestPath("a", "b"),
+        withWeight(["a", "b"], 1)
+      );
     });
 
     it("Should compute shortest path on two edges.", function () {
       var graph = Graph().addEdge("a", "b").addEdge("b", "c");
-      assert.deepEqual(
+      assert.deepStrictEqual(
         graph.shortestPath("a", "c"),
         withWeight(["a", "b", "c"], 2)
       );
@@ -393,11 +397,11 @@ describe("Graph", function () {
         .addEdge("x", "z", 4)
         .addEdge("z", "x", 6);
 
-      assert.deepEqual(
+      assert.deepStrictEqual(
         graph.shortestPath("s", "z"),
         withWeight(["s", "y", "z"], 5 + 2)
       );
-      assert.deepEqual(
+      assert.deepStrictEqual(
         graph.shortestPath("s", "x"),
         withWeight(["s", "y", "t", "x"], 5 + 3 + 1)
       );
@@ -420,7 +424,7 @@ describe("Graph", function () {
 
     it("Should be robust to disconnected subgraphs.", function () {
       var graph = Graph().addEdge("a", "b").addEdge("b", "c").addEdge("d", "e");
-      assert.deepEqual(
+      assert.deepStrictEqual(
         graph.shortestPath("a", "c"),
         withWeight(["a", "b", "c"], 2)
       );
@@ -430,7 +434,7 @@ describe("Graph", function () {
   describe("hadEdge", function () {
     it("Should compute hasEdge.", function () {
       var graph = Graph().addEdge("a", "b");
-      assert(graph.hasEdge("a", "b"), true);
+      assert.strictEqual(graph.hasEdge("a", "b"), true);
       assert.strictEqual(graph.hasEdge("b", "a"), false);
       assert.strictEqual(graph.hasEdge("c", "a"), false);
     });
@@ -447,8 +451,8 @@ describe("Graph", function () {
         .addEdge("y", "z", 2)
         .addEdge("x", "z", 4);
 
-      const nodes = [];
-      graph.walk((node) => {
+      const nodes: string[] = [];
+      graph.walk((node: string) => {
         nodes.push(node);
       });
       assert.deepStrictEqual(nodes, ["s", "t", "y", "x", "z"]);
@@ -470,9 +474,21 @@ describe("Graph", function () {
       ]);
     });
   });
+
+  describe("edge ids", function () {
+    it("Should add ids to edges", () => {
+      let graph = Graph()
+        .addEdge("a", "b", undefined, "123")
+        .addEdge("b", "a", undefined, "456")
+        .addEdge("b", "c", undefined, "789");
+      assert.deepStrictEqual(graph.getEdgeId("a", "b"), "123");
+      assert.deepStrictEqual(graph.getEdgeId("b", "a"), "456");
+      assert.deepStrictEqual(graph.getEdgeId("b", "c"), "789");
+    });
+  });
 });
 
-function contains(arr, item) {
+function contains<T>(arr: T[], item: T) {
   return (
     arr.filter(function (d) {
       return d === item;
@@ -480,8 +496,9 @@ function contains(arr, item) {
   );
 }
 
-function comesBefore(arr, a, b) {
-  var aIndex, bIndex;
+function comesBefore<T>(arr: T[], a: T, b: T) {
+  let aIndex: number;
+  let bIndex: number;
   arr.forEach(function (d, i) {
     if (d === a) {
       aIndex = i;
@@ -490,5 +507,5 @@ function comesBefore(arr, a, b) {
       bIndex = i;
     }
   });
-  return aIndex < bIndex;
+  return aIndex! < bIndex!;
 }
