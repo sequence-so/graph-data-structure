@@ -7,6 +7,7 @@
         "graph-data-structure.js",
         "index.d.ts"
     ],
+    "typings": "src/index.d.ts",
     "scripts": {
         "build": "tsc",
         "test": "npm run build && mocha",
