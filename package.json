@@ -1,6 +1,6 @@
 {
-    "name": "graph-data-structure",
-    "version": "2.0.0",
+    "name": "sequence-graph-data-structure",
+    "version": "2.0.1",
     "description": "A graph data structure with topological sort.",
     "main": "index.js",
     "files": [
@@ -15,7 +15,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/datavis-tech/graph-data-structure.git"
+        "url": "git+https://github.com/sequence-so/graph-data-structure.git"
     },
     "keywords": [
         "graph",
@@ -26,9 +26,9 @@
     "author": "Curran Kelleher",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/datavis-tech/graph-data-structure/issues"
+        "url": "https://github.com/sequence-so/graph-data-structure/issues"
     },
-    "homepage": "https://github.com/datavis-tech/graph-data-structure#readme",
+    "homepage": "https://github.com/sequence-so/graph-data-structure#readme",
     "devDependencies": {
         "@types/node": "^15.3.1",
         "browserify": "^17.0.0",

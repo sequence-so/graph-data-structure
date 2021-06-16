@@ -14,6 +14,7 @@ function Graph(serialized) {
         nodes,
         adjacent,
         addEdge,
+        getEdges,
         removeEdge,
         hasEdge,
         setEdgeWeight,
@@ -22,11 +23,13 @@ function Graph(serialized) {
         outdegree,
         depthFirstSearch,
         hasCycle,
+        getCycles,
+        walk,
         lowestCommonAncestors,
         topologicalSort,
         shortestPath,
         serialize,
-        deserialize
+        deserialize,
     };
     // The adjacency list of the graph.
     // Keys are node ids.
@@ -117,6 +120,9 @@ function Graph(serialized) {
         }
         return graph;
     }
+    function getEdges() {
+        return edges;
+    }
     // Returns true if there is an edge from node u to node v.
     function hasEdge(u, v) {
         return adjacent(u).includes(v);
@@ -145,45 +151,69 @@ function Graph(serialized) {
     // include or exclude the source nodes from the result (true by default).
     // If `sourceNodes` is not specified, all nodes in the graph
     // are used as source nodes.
-    function depthFirstSearch(sourceNodes, includeSourceNodes = true, errorOnCycle = false) {
+    function depthFirstSearchBase(type, sourceNodes, options = {
+        includeSourceNodes: true,
+        errorOnCycle: false,
+        collectCycles: false,
+    }) {
         if (!sourceNodes) {
             sourceNodes = nodes();
         }
-        if (typeof includeSourceNodes !== "boolean") {
-            includeSourceNodes = true;
+        if (typeof options.includeSourceNodes !== "boolean") {
+            options.includeSourceNodes = true;
         }
         const visited = {};
         const visiting = {};
         const nodeList = [];
-        function DFSVisit(node) {
-            if (visiting[node] && errorOnCycle) {
+        const cycles = {};
+        function DFSVisit(node, from) {
+            if (visiting[node] && options.errorOnCycle) {
                 throw new CycleError("Cycle found");
+            }
+            if (visiting[node] && options.collectCycles) {
+                cycles[from] = node;
+                return;
             }
             if (!visited[node]) {
                 visited[node] = true;
                 visiting[node] = true; // temporary flag while visiting
-                adjacent(node).forEach(DFSVisit);
+                adjacent(node).forEach((adjacent) => DFSVisit(adjacent, node));
                 visiting[node] = false;
                 nodeList.push(node);
             }
         }
-        if (includeSourceNodes) {
-            sourceNodes.forEach(DFSVisit);
+        if (options.includeSourceNodes) {
+            sourceNodes.forEach((source) => DFSVisit(source));
         }
         else {
             sourceNodes.forEach(function (node) {
                 visited[node] = true;
             });
             sourceNodes.forEach(function (node) {
-                adjacent(node).forEach(DFSVisit);
+                adjacent(node).forEach((adjacent) => DFSVisit(adjacent, node));
             });
         }
-        return nodeList;
+        if (type === "normal") {
+            return nodeList;
+        }
+        else {
+            return cycles;
+        }
+    }
+    function depthFirstSearch(sourceNodes, options = {
+        includeSourceNodes: true,
+        errorOnCycle: false,
+    }) {
+        return depthFirstSearchBase("normal", sourceNodes, Object.assign(Object.assign({}, options), { collectCycles: false }));
     }
     // Returns true if the graph has one or more cycles and false otherwise
     function hasCycle() {
         try {
-            depthFirstSearch(undefined, true, true);
+            depthFirstSearchBase("normal", undefined, {
+                errorOnCycle: true,
+                includeSourceNodes: true,
+                collectCycles: false,
+            });
             // No error thrown -> no cycles
             return false;
         }
@@ -195,6 +225,23 @@ function Graph(serialized) {
                 throw error;
             }
         }
+    }
+    function getCycles(sourceNodes) {
+        const cycles = depthFirstSearchBase("cycles", sourceNodes, {
+            collectCycles: true,
+            errorOnCycle: false,
+            includeSourceNodes: typeof sourceNodes !== "undefined",
+        });
+        const cycleList = [];
+        Object.keys(cycles).forEach((source) => {
+            if (source < cycles[source]) {
+                cycleList.push([source, cycles[source]]);
+            }
+            else {
+                cycleList.push([cycles[source], source]);
+            }
+        });
+        return cycleList;
     }
     // Least Common Ancestors
     // Inspired by https://github.com/relaxedws/lca/blob/master/src/LowestCommonAncestor.php code
@@ -210,7 +257,7 @@ function Graph(serialized) {
                     lcas.push(node);
                     return false; // found - shortcut
                 }
-                return adjacent(node).every(node => {
+                return adjacent(node).every((node) => {
                     return CA1Visit(visited, node);
                 });
             }
@@ -225,7 +272,7 @@ function Graph(serialized) {
                     lcas.push(node);
                 }
                 else if (lcas.length == 0) {
-                    adjacent(node).forEach(node => {
+                    adjacent(node).forEach((node) => {
                         CA2Visit(visited, node);
                     });
                 }
@@ -242,7 +289,10 @@ function Graph(serialized) {
     // Amazingly, this comes from just reversing the result from depth first search.
     // Cormen et al. "Introduction to Algorithms" 3rd Ed. p. 613
     function topologicalSort(sourceNodes, includeSourceNodes = true) {
-        return depthFirstSearch(sourceNodes, includeSourceNodes, true).reverse();
+        return depthFirstSearchBase("normal", sourceNodes, {
+            includeSourceNodes,
+            errorOnCycle: true,
+        }).reverse();
     }
     // Dijkstra's Shortest Path Algorithm.
     // Cormen et al. "Introduction to Algorithms" 3rd Ed. p. 658
@@ -341,7 +391,7 @@ function Graph(serialized) {
             nodes: nodes().map(function (id) {
                 return { id: id };
             }),
-            links: []
+            links: [],
         };
         serialized.nodes.forEach(function (node) {
             const source = node.id;
@@ -349,11 +399,33 @@ function Graph(serialized) {
                 serialized.links.push({
                     source: source,
                     target: target,
-                    weight: getEdgeWeight(source, target)
+                    weight: getEdgeWeight(source, target),
                 });
             });
         });
         return serialized;
+    }
+    /**
+     * Walks through each node in the graph. Repeats elements
+     * if edges connect to a Node more than once.
+     *
+     * @param onElement Callback for node
+     */
+    function walk(onElement) {
+        const visited = {};
+        const followNode = (following) => {
+            if (visited[following]) {
+                return;
+            }
+            visited[following] = true;
+            onElement(following);
+            const nextNodes = adjacent(following);
+            if (!nextNodes.length) {
+                return;
+            }
+            nextNodes.map(followNode);
+        };
+        nodes().map(followNode);
     }
     // Deserializes the given serialized graph.
     function deserialize(serialized) {

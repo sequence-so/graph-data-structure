@@ -142,6 +142,10 @@ Gets the *weight* of the edge from node *u* to node *v*. If no weight was previo
 
 List all nodes in the graph. Returns an array of node identifier strings.
 
+<a name="getEdges" href="#getEdges">#</a> <i>graph</i>.<b>getEdges</b>()
+
+List all edges in the graph. Returns an object where the keys are string node IDs for a node and the value is an array of string node IDs.
+
 <a name="adjacent" href="#adjacent">#</a> <i>graph</i>.<b>adjacent</b>(<i>node</i>)
 
 Gets the adjacent node list for the specified node. The argument *node* is a string identifier for a node. Returns an array of node identifier strings.
@@ -215,6 +219,14 @@ Arguments:
 <a name="has-cycle" href="#has-cycle">#</a> <i>graph</i>.<b>hasCycle</b>()
 
 Checks if the graph has any cycles. Returns `true` if it does and `false` otherwise.
+
+<a name="has-cycle" href="#get-cycle">#</a> <i>graph</i>.<b>getCycles</b>()
+
+Returns a list of pairs of string node IDs that have a cycle. 
+
+<a name="walk" href="#walk">#</a> <i>graph</i>.<b>walk</b>(onElement: (node: NodeId) => void)
+
+Iterates through each element in the graph at most once. 
 
 <a name="lca" href="#lca">#</a> <i>graph</i>.<b>lowestCommonAncestors</b>([<i>node1</i>][, <i>node2</i>])
 
